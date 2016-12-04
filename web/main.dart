@@ -1,7 +1,7 @@
 import 'dart:html' as html;
 import 'package:stagexl/stagexl.dart';
 
-ResourceManager resourceManager  = new ResourceManager();
+ResourceManager resourceManager = new ResourceManager();
 
 void main() {
   // setup the Stage and RenderLoop
@@ -21,20 +21,36 @@ void main() {
 
     var cat = new Cat(resourceManager.getBitmapData("cat"));
 
-    stage.onMouseClick.listen((MouseEvent event) {
-      cat.walkHorizontal(event.stageX);
+    stage.onKeyDown.listen((KeyboardEvent event) {
+      if (event.keyCode == 39) {
+        cat.walkRight();
+        cat.meow();
+      }
+      if (event.keyCode == 37) {
+        cat.walkLeft();
+        cat.meow();
+      }
+      if (event.keyCode == 40) {
+        cat.walkDown();
+        cat.meow();
+      }
+      if (event.keyCode == 38) {
+        cat.walkUp();
+        cat.meow();
+      }
     });
 
     stage.addChild(cat);
+    stage.focus = stage;
     stage.juggler.add(cat);
   });
 }
 
-class Ground extends DisplayObjectContainer{
-  Ground(){
-    for(int row=0; row<8; row++){
-      for(int column=0; column<10; column++){
-        addTile(column*101, row*80);
+class Ground extends DisplayObjectContainer {
+  Ground() {
+    for (int row = 0; row < 8; row++) {
+      for (int column = 0; column < 10; column++) {
+        addTile(column * 101, row * 80);
       }
     }
   }
@@ -45,7 +61,6 @@ class Ground extends DisplayObjectContainer{
     tile.y = tileY;
     addChild(tile);
   }
-
 }
 
 class Cat extends Bitmap implements Animatable {
@@ -72,6 +87,24 @@ class Cat extends Bitmap implements Animatable {
     x = (1 - z) * x + z * targetX;
     y = (1 - z) * y + z * targetY;
     return true;
+  }
+
+  walkRight() {
+    targetX = targetX + width;
+    scaleX = 1;
+  }
+
+  walkLeft() {
+    targetX = targetX - width;
+    scaleX = -1;
+  }
+
+  walkUp() {
+    targetY = targetY - 80;
+  }
+
+  walkDown() {
+    targetY = targetY + 80;
   }
 
   walkHorizontal(clickX) {
