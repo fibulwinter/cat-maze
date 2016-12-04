@@ -1,6 +1,8 @@
 import 'dart:html' as html;
 import 'package:stagexl/stagexl.dart';
 
+ResourceManager resourceManager  = new ResourceManager();
+
 void main() {
   // setup the Stage and RenderLoop
   var canvas = html.querySelector('#stage');
@@ -9,20 +11,15 @@ void main() {
   var renderLoop = new RenderLoop();
   renderLoop.addStage(stage);
 
-  var resourceManager = new ResourceManager()
+  resourceManager
     ..addBitmapData("cat", "cat.png")
+    ..addBitmapData("stoneTile", "stone.png")
     ..addSound('meow', 'meow.ogg');
 
   resourceManager.load().then((_) {
-    var cat = new Cat(resourceManager.getBitmapData("cat"), resourceManager);
-    cat.x = 400;
-    cat.y = 300;
+    stage.addChild(new Ground());
 
-    stage.onKeyDown.listen((KeyboardEvent event) {
-      // if(event.keyCode==39){
-      cat.walk(cat.x + 10, cat.y = 0);
-      // }
-    });
+    var cat = new Cat(resourceManager.getBitmapData("cat"));
 
     stage.onMouseClick.listen((MouseEvent event) {
       cat.walkHorizontal(event.stageX);
@@ -33,12 +30,29 @@ void main() {
   });
 }
 
+class Ground extends DisplayObjectContainer{
+  Ground(){
+    for(int row=0; row<8; row++){
+      for(int column=0; column<10; column++){
+        addTile(column*101, row*80);
+      }
+    }
+  }
+
+  addTile(int tileX, int tileY) {
+    var tile = new Bitmap(resourceManager.getBitmapData('stoneTile'));
+    tile.x = tileX;
+    tile.y = tileY;
+    addChild(tile);
+  }
+
+}
+
 class Cat extends Bitmap implements Animatable {
-  ResourceManager resourceManager;
   var targetX = 0;
   var targetY = 0;
 
-  Cat(BitmapData bitmapData, this.resourceManager) : super(bitmapData) {
+  Cat(BitmapData bitmapData) : super(bitmapData) {
     pivotX = width / 2;
     pivotY = height / 2;
     x = pivotX;
@@ -54,7 +68,7 @@ class Cat extends Bitmap implements Animatable {
 
   @override
   bool advanceTime(num time) {
-    var z = 0.25;
+    var z = 0.05;
     x = (1 - z) * x + z * targetX;
     y = (1 - z) * y + z * targetY;
     return true;
