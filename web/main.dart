@@ -1,4 +1,5 @@
 import 'dart:html' as html;
+import 'dart:math';
 import 'package:stagexl/stagexl.dart';
 
 ResourceManager resourceManager = new ResourceManager();
@@ -14,6 +15,7 @@ void main() {
   resourceManager
     ..addBitmapData("cat", "cat.png")
     ..addBitmapData("stoneTile", "stone.png")
+    ..addBitmapData("tree", "tree.png")
     ..addSound('meow', 'meow.ogg');
 
   resourceManager.load().then((_) {
@@ -48,18 +50,23 @@ void main() {
 
 class Ground extends DisplayObjectContainer {
   Ground() {
+    var random = new Random();
     for (int row = 0; row < 8; row++) {
       for (int column = 0; column < 10; column++) {
-        addTile(column * 101, row * 80);
+        addTile(column * 101, row * 80, random.nextBool());
       }
     }
   }
 
-  addTile(int tileX, int tileY) {
-    var tile = new Bitmap(resourceManager.getBitmapData('stoneTile'));
-    tile.x = tileX;
-    tile.y = tileY;
-    addChild(tile);
+  addTile(int tileX, int tileY, bool hasTree) {
+    addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
+      ..x = tileX
+      ..y = tileY);
+      if(hasTree){
+        addChild(new Bitmap(resourceManager.getBitmapData('tree'))
+          ..x = tileX
+          ..y = tileY);
+      }
   }
 }
 
@@ -74,11 +81,6 @@ class Cat extends Bitmap implements Animatable {
     targetX = x;
     y = pivotY;
     targetY = y;
-  }
-
-  walk(targetX, targetY) {
-    this.targetX = targetX;
-    this.targetY = targetY;
   }
 
   @override
@@ -105,18 +107,6 @@ class Cat extends Bitmap implements Animatable {
 
   walkDown() {
     targetY = targetY + 80;
-  }
-
-  walkHorizontal(clickX) {
-    if (clickX > x) {
-      targetX = targetX + width;
-      scaleX = 1;
-    }
-    if (clickX < x) {
-      targetX = targetX - width;
-      scaleX = -1;
-    }
-    meow();
   }
 
   meow() {
