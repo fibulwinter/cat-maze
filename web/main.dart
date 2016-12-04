@@ -15,7 +15,9 @@ void main() {
     ..addBitmapData("cat", "cat.png")
     ..addBitmapData("stoneTile", "stone.png")
     ..addBitmapData("tree", "tree.png")
-    ..addSound('meow', 'meow.ogg');
+    ..addBitmapData("star", "star.png")
+    ..addSound('meow', 'meow.ogg')
+    ..addSound('purr', 'purr.oga');
 
   resourceManager.load().then((_) {
     var world = new World();
@@ -45,6 +47,12 @@ void main() {
   });
 }
 
+class Star {
+  int mapX;
+  int mapY;
+  Star(this.mapX, this.mapY);
+}
+
 class World {
   String map = """
 ############
@@ -59,11 +67,13 @@ class World {
 ############
 """;
 
+  List<Star> stars = [new Star(9, 7)];
+
   at(int mapX, int mapY) {
-    if (mapX<0 || mapX>=10 || mapY<0 || mapY>=8) {
+    if (mapX < 0 || mapX >= 10 || mapY < 0 || mapY >= 8) {
       return '#';
     } else {
-      return map.split("#\n#")[mapY+1][mapX];
+      return map.split("#\n#")[mapY + 1][mapX];
     }
   }
 
@@ -72,7 +82,17 @@ class World {
   }
 
   bool canWalk(int mapX, int mapY) {
-    return at(mapX, mapY) == '.';
+    return at(mapX, mapY) == '.' || hasStar(mapX, mapY);
+  }
+
+  bool hasStar(int mapX, int mapY) {
+    return stars
+        .where((star) => star.mapX == mapX && star.mapY == mapY)
+        .isNotEmpty;
+  }
+
+  removeStar(int mapX, int mapY) {
+    stars.removeWhere((star) => star.mapX == mapX && star.mapY == mapY);
   }
 }
 
@@ -80,17 +100,23 @@ class Ground extends DisplayObjectContainer {
   Ground(World world) {
     for (int row = 0; row < 8; row++) {
       for (int column = 0; column < 10; column++) {
-        addTile(column * 101, row * 80, world.hasTree(column, row));
+        addTile(column * 101, row * 80, world.hasTree(column, row),
+            world.hasStar(column, row));
       }
     }
   }
 
-  addTile(int tileX, int tileY, bool hasTree) {
+  addTile(int tileX, int tileY, bool hasTree, bool hasStar) {
     addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
       ..x = tileX
       ..y = tileY);
     if (hasTree) {
       addChild(new Bitmap(resourceManager.getBitmapData('tree'))
+        ..x = tileX
+        ..y = tileY);
+    }
+    if (hasStar) {
+      addChild(new Bitmap(resourceManager.getBitmapData('star'))
         ..x = tileX
         ..y = tileY);
     }
@@ -127,7 +153,11 @@ class Cat extends Bitmap implements Animatable {
       mapY = mapY + dy;
       targetX = targetX + dx * width;
       targetY = targetY + dy * 80;
-    } else {
+      if (world.hasStar(mapX, mapY)) {
+        world.removeStar(mapX, mapY);
+        purr();
+      }
+    }else{
       meow();
     }
   }
@@ -152,5 +182,9 @@ class Cat extends Bitmap implements Animatable {
 
   meow() {
     resourceManager.getSound('meow').play();
+  }
+
+  purr() {
+    resourceManager.getSound('purr').play();
   }
 }
