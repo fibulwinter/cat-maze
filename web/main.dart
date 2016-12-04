@@ -54,7 +54,7 @@ class Cat extends Bitmap implements Animatable {
 
   @override
   bool advanceTime(num time) {
-    var z = 0.05;
+    var z = 0.25;
     x = (1 - z) * x + z * targetX;
     y = (1 - z) * y + z * targetY;
     return true;
