@@ -1,5 +1,4 @@
 import 'dart:html' as html;
-import 'dart:math';
 import 'package:stagexl/stagexl.dart';
 
 ResourceManager resourceManager = new ResourceManager();
@@ -19,26 +18,24 @@ void main() {
     ..addSound('meow', 'meow.ogg');
 
   resourceManager.load().then((_) {
-    stage.addChild(new Ground());
+    var world = new World();
 
-    var cat = new Cat(resourceManager.getBitmapData("cat"));
+    stage.addChild(new Ground(world));
+
+    var cat = new Cat(resourceManager.getBitmapData("cat"), world);
 
     stage.onKeyDown.listen((KeyboardEvent event) {
       if (event.keyCode == 39) {
         cat.walkRight();
-        cat.meow();
       }
       if (event.keyCode == 37) {
         cat.walkLeft();
-        cat.meow();
       }
       if (event.keyCode == 40) {
         cat.walkDown();
-        cat.meow();
       }
       if (event.keyCode == 38) {
         cat.walkUp();
-        cat.meow();
       }
     });
 
@@ -48,12 +45,42 @@ void main() {
   });
 }
 
+class World {
+  String map = """
+############
+#...*......#
+#...*......#
+#..........#
+#..........#
+#....*.....#
+#..........#
+#.......*..#
+#..........#
+############
+""";
+
+  at(int mapX, int mapY) {
+    if (mapX<0 || mapX>=10 || mapY<0 || mapY>=8) {
+      return '#';
+    } else {
+      return map.split("#\n#")[mapY+1][mapX];
+    }
+  }
+
+  bool hasTree(int mapX, int mapY) {
+    return at(mapX, mapY) == '*';
+  }
+
+  bool canWalk(int mapX, int mapY) {
+    return at(mapX, mapY) == '.';
+  }
+}
+
 class Ground extends DisplayObjectContainer {
-  Ground() {
-    var random = new Random();
+  Ground(World world) {
     for (int row = 0; row < 8; row++) {
       for (int column = 0; column < 10; column++) {
-        addTile(column * 101, row * 80, random.nextBool());
+        addTile(column * 101, row * 80, world.hasTree(column, row));
       }
     }
   }
@@ -62,19 +89,22 @@ class Ground extends DisplayObjectContainer {
     addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
       ..x = tileX
       ..y = tileY);
-      if(hasTree){
-        addChild(new Bitmap(resourceManager.getBitmapData('tree'))
-          ..x = tileX
-          ..y = tileY);
-      }
+    if (hasTree) {
+      addChild(new Bitmap(resourceManager.getBitmapData('tree'))
+        ..x = tileX
+        ..y = tileY);
+    }
   }
 }
 
 class Cat extends Bitmap implements Animatable {
+  World world;
+  var mapX = 0;
+  var mapY = 0;
   var targetX = 0;
   var targetY = 0;
 
-  Cat(BitmapData bitmapData) : super(bitmapData) {
+  Cat(BitmapData bitmapData, this.world) : super(bitmapData) {
     pivotX = width / 2;
     pivotY = height / 2;
     x = pivotX;
@@ -91,22 +121,33 @@ class Cat extends Bitmap implements Animatable {
     return true;
   }
 
+  tryWalk(int dx, int dy) {
+    if (world.canWalk(mapX + dx, mapY + dy)) {
+      mapX = mapX + dx;
+      mapY = mapY + dy;
+      targetX = targetX + dx * width;
+      targetY = targetY + dy * 80;
+    } else {
+      meow();
+    }
+  }
+
   walkRight() {
-    targetX = targetX + width;
     scaleX = 1;
+    tryWalk(1, 0);
   }
 
   walkLeft() {
-    targetX = targetX - width;
     scaleX = -1;
+    tryWalk(-1, 0);
   }
 
   walkUp() {
-    targetY = targetY - 80;
+    tryWalk(0, -1);
   }
 
   walkDown() {
-    targetY = targetY + 80;
+    tryWalk(0, 1);
   }
 
   meow() {
