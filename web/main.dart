@@ -2,6 +2,7 @@ import 'dart:html' as html;
 import 'package:stagexl/stagexl.dart';
 
 ResourceManager resourceManager = new ResourceManager();
+Ground ground;
 
 void main() {
   // setup the Stage and RenderLoop
@@ -22,7 +23,8 @@ void main() {
   resourceManager.load().then((_) {
     var world = new World();
 
-    stage.addChild(new Ground(world));
+    ground = new Ground(world);
+    stage.addChild(ground);
 
     var cat = new Cat(resourceManager.getBitmapData("cat"), world);
 
@@ -97,6 +99,8 @@ class World {
 }
 
 class Ground extends DisplayObjectContainer {
+  var star;
+
   Ground(World world) {
     for (int row = 0; row < 8; row++) {
       for (int column = 0; column < 10; column++) {
@@ -116,10 +120,15 @@ class Ground extends DisplayObjectContainer {
         ..y = tileY);
     }
     if (hasStar) {
-      addChild(new Bitmap(resourceManager.getBitmapData('star'))
+      star = new Bitmap(resourceManager.getBitmapData('star'))
         ..x = tileX
-        ..y = tileY);
+        ..y = tileY;
+      addChild(star);
     }
+  }
+
+  removeStar() {
+    removeChild(star);
   }
 }
 
@@ -155,9 +164,10 @@ class Cat extends Bitmap implements Animatable {
       targetY = targetY + dy * 80;
       if (world.hasStar(mapX, mapY)) {
         world.removeStar(mapX, mapY);
+        ground.removeStar();
         purr();
       }
-    }else{
+    } else {
       meow();
     }
   }
