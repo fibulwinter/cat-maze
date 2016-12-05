@@ -1,46 +1,83 @@
 part of catRules;
 
-class Cat extends Bitmap implements Animatable {
+class Cat extends Bitmap {
   World world;
   var mapX = 0;
   var mapY = 0;
-  var targetX = 0;
-  var targetY = 0;
-  var age = 0;
-  var lastCommandAge = 0;
+  var busy = false;
+  Random random = new Random();
 
   Cat(BitmapData bitmapData, this.world) : super(bitmapData) {
     pivotX = width / 2;
     pivotY = height / 2;
     x = pivotX;
-    targetX = x;
     y = pivotY;
-    targetY = y;
-  }
-
-  @override
-  bool advanceTime(num time) {
-    age = age + time;
-    var z = 0.05;
-    x = (1 - z) * x + z * targetX;
-    y = (1 - z) * y + z * targetY;
-    return true;
   }
 
   tryWalk(int dx, int dy) {
-    if (world.canWalk(mapX + dx, mapY + dy) && age > lastCommandAge+0.35) {
-      meow();
-      lastCommandAge = age;
-      mapX = mapX + dx;
-      mapY = mapY + dy;
-      targetX = targetX + dx * width;
-      targetY = targetY + dy * 80;
-      if (world.hasStar(mapX, mapY)) {
-        world.removeStar(mapX, mapY);
-        ground.removeStar();
-        purr();
-      }
+    if (busy) {
+      return;
     }
+    if (world.canWalk(mapX + dx, mapY + dy)) {
+      walk(dx, dy);
+    } else if (canJump(dx, dy)) {
+      jump(dx, dy);
+    } else {
+      showNoWay(dx, dy);
+    }
+  }
+
+  walk(int dx, int dy) {
+    if (random.nextInt(10) > 7) {
+      meow();
+    }
+    mapX = mapX + dx;
+    mapY = mapY + dy;
+    animateMotion(dx, dy);
+    tryGetStar();
+  }
+
+  tryGetStar() {
+    if (world.hasStar(mapX, mapY)) {
+      world.removeStar(mapX, mapY);
+      ground.removeStar();
+      purr();
+    }
+  }
+
+  bool canJump(int dx, int dy) {
+    return (world.hasTree(mapX + dx, mapY + dy) &&
+        world.canWalk(mapX + 2 * dx, mapY + 2 * dy));
+  }
+
+  jump(int dx, int dy) {
+    meow();
+    mapX = mapX + 2 * dx;
+    mapY = mapY + 2 * dy;
+    animateMotion(2 * dx, 2 * dy);
+    tryGetStar();
+  }
+
+  animateMotion(int dx, int dy) {
+    busy = true;
+    var tween = new Tween(this, 0.4, Transition.easeInOutQuadratic);
+    tween.animate.x.by(dx * width);
+    tween.animate.y.by(dy * 80);
+    tween.onComplete = (() {
+      busy = false;
+    });
+    renderLoop.juggler.add(tween);
+  }
+
+  showNoWay(int dx, int dy) {
+    busy = true;
+    var tween = new Tween(this, 0.2, Transition.sine);
+    tween.animate.x.by(dx * width * 0.25);
+    tween.animate.y.by(dy * 80 * 0.25);
+    renderLoop.juggler.add(tween);
+    tween.onComplete = (() {
+      busy = false;
+    });
   }
 
   walkRight() {

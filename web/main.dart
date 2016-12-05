@@ -1,21 +1,20 @@
 library catRules;
 
 import 'dart:html' as html;
+import 'dart:math';
 import 'package:stagexl/stagexl.dart';
-
 
 part 'cat.dart';
 
-
 ResourceManager resourceManager = new ResourceManager();
 Ground ground;
+RenderLoop renderLoop = new RenderLoop();
 
 void main() {
   // setup the Stage and RenderLoop
   var canvas = html.querySelector('#stage');
   canvas.focus();
   var stage = new Stage(canvas);
-  var renderLoop = new RenderLoop();
   renderLoop.addStage(stage);
 
   resourceManager
@@ -51,7 +50,6 @@ void main() {
 
     stage.addChild(cat);
     stage.focus = stage;
-    stage.juggler.add(cat);
   });
 }
 
@@ -69,7 +67,7 @@ class World {
 #*.**...*..#
 #....*..*..#
 #....*..*..#
-#.......*..#
+#...*...*..#
 #....****..#
 #....*.....#
 ############
@@ -134,6 +132,14 @@ class Ground extends DisplayObjectContainer {
   }
 
   removeStar() {
-    removeChild(star);
+    var tween = new Tween(star, 1.0);
+    tween.animate.scaleX.to(3.0);
+    tween.animate.scaleY.to(3.0);
+    tween.animate.alpha.to(0.0);
+    tween.animate.rotation.by(6.3);
+    tween.onComplete=(){
+      removeChild(star);
+    };
+    renderLoop.juggler.add(tween);
   }
 }
