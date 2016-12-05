@@ -13,12 +13,12 @@ void main() {
   renderLoop.addStage(stage);
 
   resourceManager
-    ..addBitmapData("cat", "cat.png")
-    ..addBitmapData("stoneTile", "stone.png")
-    ..addBitmapData("tree", "tree.png")
-    ..addBitmapData("star", "star.png")
-    ..addSound('meow', 'meow.ogg')
-    ..addSound('purr', 'purr.ogg');
+    ..addBitmapData("cat", "images/cat.png")
+    ..addBitmapData("stoneTile", "images/stone.png")
+    ..addBitmapData("tree", "images/tree.png")
+    ..addBitmapData("star", "images/star.png")
+    ..addSound('meow', 'sounds/meow.ogg')
+    ..addSound('purr', 'sounds/purr.ogg');
 
   resourceManager.load().then((_) {
     var world = new World();
