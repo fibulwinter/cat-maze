@@ -47,14 +47,14 @@ class Cat extends Bitmap {
 
   bool canJump(int dx, int dy) {
     return (world.hasTree(mapX + dx, mapY + dy) &&
-        world.canWalk(mapX + 2 * dx, mapY + 2 * dy));
+        world.canWalk(mapX + 2 * dx, mapY + 2 * dy) && dy==0);
   }
 
   jump(int dx, int dy) {
     meow();
     mapX = mapX + 2 * dx;
     mapY = mapY + 2 * dy;
-    animateMotion(2 * dx, 2 * dy);
+    animateJump(2 * dx, 2 * dy);
     tryGetStar();
   }
 
@@ -67,6 +67,19 @@ class Cat extends Bitmap {
       busy = false;
     });
     renderLoop.juggler.add(tween);
+  }
+
+  animateJump(int dx, int dy) {
+    busy = true;
+    var xTween = new Tween(this, 0.4, Transition.easeInOutQuadratic);
+    xTween.animate.x.by(dx * width);
+    xTween.onComplete = (() {
+      busy = false;
+    });
+    renderLoop.juggler.add(xTween);
+    var yTween = new Tween(this, 0.4, Transition.sine);
+    yTween.animate.y.by(-80);
+    renderLoop.juggler.add(yTween);
   }
 
   showNoWay(int dx, int dy) {
