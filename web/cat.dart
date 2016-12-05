@@ -6,6 +6,8 @@ class Cat extends Bitmap implements Animatable {
   var mapY = 0;
   var targetX = 0;
   var targetY = 0;
+  var age = 0;
+  var lastCommandAge = 0;
 
   Cat(BitmapData bitmapData, this.world) : super(bitmapData) {
     pivotX = width / 2;
@@ -18,6 +20,7 @@ class Cat extends Bitmap implements Animatable {
 
   @override
   bool advanceTime(num time) {
+    age = age + time;
     var z = 0.05;
     x = (1 - z) * x + z * targetX;
     y = (1 - z) * y + z * targetY;
@@ -25,7 +28,9 @@ class Cat extends Bitmap implements Animatable {
   }
 
   tryWalk(int dx, int dy) {
-    if (world.canWalk(mapX + dx, mapY + dy)) {
+    if (world.canWalk(mapX + dx, mapY + dy) && age > lastCommandAge+0.35) {
+      meow();
+      lastCommandAge = age;
       mapX = mapX + dx;
       mapY = mapY + dy;
       targetX = targetX + dx * width;
@@ -35,8 +40,6 @@ class Cat extends Bitmap implements Animatable {
         ground.removeStar();
         purr();
       }
-    } else {
-      meow();
     }
   }
 
