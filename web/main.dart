@@ -18,7 +18,7 @@ void main() {
     ..addBitmapData("tree", "tree.png")
     ..addBitmapData("star", "star.png")
     ..addSound('meow', 'meow.ogg')
-    ..addSound('purr', 'purr.oga');
+    ..addSound('purr', 'purr.ogg');
 
   resourceManager.load().then((_) {
     var world = new World();
