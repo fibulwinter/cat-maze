@@ -27,6 +27,7 @@ void main() {
 
   resourceManager.load().then((_) {
     var world = new World();
+    new WorldGenerator().makeRandomWorld(world);
 
     ground = new Ground(world);
     stage.addChild(ground);
@@ -59,19 +60,21 @@ class Star {
   Star(this.mapX, this.mapY);
 }
 
+class WorldGenerator {
+  makeRandomWorld(World world) {
+    var random = new Random();
+    for (var i = 1; i < 79; i++) {
+      if (random.nextBool()) {
+        world.map[i] = '*';
+      } else {
+        world.map[i] = '.';
+      }
+    }
+  }
+}
+
 class World {
-  String map = """
-############
-#...*......#
-#...*..*...#
-#*.**...*..#
-#....*..*..#
-#....*..*..#
-#...*...*..#
-#....****..#
-#....*.....#
-############
-""";
+  List<String> map = new List.filled(10 * 8, '.');
 
   List<Star> stars = [new Star(9, 7)];
 
@@ -79,7 +82,7 @@ class World {
     if (mapX < 0 || mapX >= 10 || mapY < 0 || mapY >= 8) {
       return '#';
     } else {
-      return map.split("#\n#")[mapY + 1][mapX];
+      return map[mapX + 10 * mapY];
     }
   }
 
@@ -137,7 +140,7 @@ class Ground extends DisplayObjectContainer {
     tween.animate.scaleY.to(3.0);
     tween.animate.alpha.to(0.0);
     tween.animate.rotation.by(6.3);
-    tween.onComplete=(){
+    tween.onComplete = () {
       removeChild(star);
     };
     renderLoop.juggler.add(tween);
