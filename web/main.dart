@@ -50,17 +50,27 @@ void main() {
     });
 
     stage.addChild(cat);
-    var title = new TextField("Meow!", new TextFormat('Helvetica,Arial', 200, Color.BlueViolet, align:TextFormatAlign.CENTER));
-    title..x=-1000..y=750/2-400/2..width=600..height=400;
+    var title = new TextField(
+        "Meow!",
+        new TextFormat('Helvetica,Arial', 200, Color.BlueViolet,
+            align: TextFormatAlign.CENTER));
+    title
+      ..x = -1000
+      ..y = 750 / 2 - 400 / 2
+      ..width = 600
+      ..height = 400;
     stage.addChild(title);
     stage.juggler.addChain([
-      new Tween(title, 4, Transition.easeOutElastic)..animate.x.to(1010/2-600/2),
+      new Tween(title, 4, Transition.easeOutElastic)
+        ..animate.x.to(1010 / 2 - 600 / 2),
       new Tween(title, 1)..animate.alpha.to(0),
     ]);
-    cat.y=-100;
-    ground.alpha=0;
-    stage.juggler.addChain([new Tween(ground, 1)..animate.alpha.to(1),
-    new Tween(cat, 1, Transition.easeOutBounce)..animate.y.to(80)]);
+    cat.y = -100;
+    ground.alpha = 0;
+    stage.juggler.addChain([
+      new Tween(ground, 1)..animate.alpha.to(1),
+      new Tween(cat, 1, Transition.easeOutBounce)..animate.y.to(80)
+    ]);
 
     stage.focus = stage;
   });
@@ -72,8 +82,27 @@ class Star {
   Star(this.mapX, this.mapY);
 }
 
+class LongestPath {
+  int x = 0;
+  int y = 0;
+  int length = 0;
+}
+
 class WorldGenerator {
   makeRandomWorld(World world) {
+    while (true) {
+      generate(world);
+      var path = calculateFurherstPath(world);
+      if (path.length > 18) {
+        world.stars.clear();
+        world.stars.add(new Star(path.x, path.y));
+
+        return;
+      }
+    }
+  }
+
+  generate(World world) {
     var random = new Random();
     for (var i = 1; i < 79; i++) {
       if (random.nextBool()) {
@@ -82,6 +111,39 @@ class WorldGenerator {
         world.map[i] = '.';
       }
     }
+  }
+
+  tryWalk(World world, List<int> map, int targetValue, int mapX, int mapY,
+      int dx, int dy, LongestPath result) {
+    if (world.canWalk(mapX + dx, mapY + dy) &&
+        map[mapX + dx + (mapY + dy) * 10] > targetValue + 1) {
+      map[mapX + dx + (mapY + dy) * 10] = targetValue + 1;
+      result.x = mapX + dx;
+      result.y = mapY + dy;
+      result.length = targetValue + 1;
+    }
+  }
+
+  LongestPath calculateFurherstPath(World world) {
+    var result = new LongestPath();
+    List<int> map = new List.filled(10 * 8, 9999999);
+    map[0] = 0;
+    for (var targetValue = 0; targetValue < 81; targetValue++) {
+      for (var mapY = 0; mapY < 8; mapY++) {
+        for (var mapX = 0; mapX < 10; mapX++) {
+          var v = map[mapX + mapY * 10];
+          if (v == targetValue) {
+            tryWalk(world, map, targetValue, mapX, mapY, 0, -1, result);
+            tryWalk(world, map, targetValue, mapX, mapY, 0, 1, result);
+            tryWalk(world, map, targetValue, mapX, mapY, 1, 0, result);
+            tryWalk(world, map, targetValue, mapX, mapY, -1, 0, result);
+            tryWalk(world, map, targetValue, mapX, mapY, 2, 0, result);
+            tryWalk(world, map, targetValue, mapX, mapY, -2, 0, result);
+          }
+        }
+      }
+    }
+    return result;
   }
 }
 
