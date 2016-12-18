@@ -50,6 +50,18 @@ void main() {
     });
 
     stage.addChild(cat);
+    var title = new TextField("Meow!", new TextFormat('Helvetica,Arial', 200, Color.BlueViolet, align:TextFormatAlign.CENTER));
+    title..x=-1000..y=750/2-400/2..width=600..height=400;
+    stage.addChild(title);
+    stage.juggler.addChain([
+      new Tween(title, 4, Transition.easeOutElastic)..animate.x.to(1010/2-600/2),
+      new Tween(title, 1)..animate.alpha.to(0),
+    ]);
+    cat.y=-100;
+    ground.alpha=0;
+    stage.juggler.addChain([new Tween(ground, 1)..animate.alpha.to(1),
+    new Tween(cat, 1, Transition.easeOutBounce)..animate.y.to(80)]);
+
     stage.focus = stage;
   });
 }
