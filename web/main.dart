@@ -38,6 +38,23 @@ void main() {
 
     var cat = new Cat(resourceManager.getBitmapData("cat"), world);
 
+    stage.onMouseClick.listen((MouseEvent event) {
+      var x = event.stageX - cat.x;
+      var y = event.stageY - cat.y;
+      if ((y > 0) && ((x >= 0 && y > x) || (x < 0 && y > -x))) {
+        cat.walkDown();
+      }
+      if ((y < 0) && ((x <= 0 && y < x) || (x > 0 && y < -x))) {
+        cat.walkUp();
+      }
+      if ((x < 0) && ((y >= 0 && y < -x) || (y < 0 && y > x))) {
+        cat.walkLeft();
+      }
+      if ((x > 0) && ((y <= 0 && y > -x) || (y > 0 && y < x))) {
+        cat.walkRight();
+      }
+    });
+
     stage.onKeyDown.listen((KeyboardEvent event) {
       if (event.keyCode == 39) {
         cat.walkRight();
@@ -203,7 +220,7 @@ class Ground extends DisplayObjectContainer {
     } else {
       addChild(new WaterTile.create()
         ..x = tileX
-        ..y = tileY+90
+        ..y = tileY + 90
         ..width = 101
         ..height = 80);
     }
