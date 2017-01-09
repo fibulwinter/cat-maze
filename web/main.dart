@@ -15,7 +15,6 @@ void main() {
   var canvas = html.querySelector('#stage');
   canvas.focus();
   var stage = new Stage(canvas);
-  stage.backgroundColor = Color.DodgerBlue;
   renderLoop.addStage(stage);
 
   resourceManager
@@ -25,6 +24,10 @@ void main() {
     ..addBitmapData("star", "images/star.png")
     ..addSound('meow', 'sounds/meow.ogg')
     ..addSound('purr', 'sounds/purr.ogg');
+
+  for (var i = 0; i < 16; i++) {
+    resourceManager.addBitmapData("water-$i", "images/water/water-$i.png");
+  }
 
   resourceManager.load().then((_) {
     var world = new World();
@@ -197,8 +200,13 @@ class Ground extends DisplayObjectContainer {
       addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
         ..x = tileX
         ..y = tileY);
+    } else {
+      addChild(new WaterTile.create()
+        ..x = tileX
+        ..y = tileY+90
+        ..width = 101
+        ..height = 80);
     }
-
 
     if (hasStar) {
       star = new Bitmap(resourceManager.getBitmapData('star'))
@@ -219,4 +227,19 @@ class Ground extends DisplayObjectContainer {
     };
     renderLoop.juggler.add(tween);
   }
+}
+
+class WaterTile extends FlipBook {
+  factory WaterTile.create() {
+    var images = [];
+    for (var i = 0; i < 16; i++) {
+      images.add(resourceManager.getBitmapData("water-$i"));
+    }
+    var waterTile = new WaterTile(images);
+    waterTile.play();
+    renderLoop.juggler.add(waterTile);
+    return waterTile;
+  }
+
+  WaterTile(List<BitmapData> bitmapDatas) : super(bitmapDatas, 10);
 }
