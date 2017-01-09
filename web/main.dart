@@ -206,23 +206,34 @@ class Ground extends DisplayObjectContainer {
   Ground(World world) {
     for (int row = 0; row < 8; row++) {
       for (int column = 0; column < 10; column++) {
-        addTile(column * 101, row * 80, world.hasTree(column, row),
-            world.hasStar(column, row));
+        addTile(column * 101, row * 80, row, column, world);
       }
     }
   }
 
-  addTile(int tileX, int tileY, bool hasTree, bool hasStar) {
-    if (!hasTree) {
+  addTile(int tileX, int tileY, int row, int column, World world) {
+    bool hasTree = world.hasTree(column, row);
+    bool hasStar = world.hasStar(column, row);
+    if (hasTree) {
+      var random = new Random();
+      if(random.nextInt(10)>3 || (world.canWalk(column-1, row)&&world.canWalk(column+1, row))){
+        addChild(new WaterTile.create()
+          ..x = tileX
+          ..y = tileY + 90
+          ..width = 101
+          ..height = 80);
+      }else{
+        addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
+          ..x = tileX
+          ..y = tileY);
+        addChild(new Bitmap(resourceManager.getBitmapData('tree'))
+          ..x = tileX
+          ..y = tileY);
+      }
+    } else {
       addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
         ..x = tileX
         ..y = tileY);
-    } else {
-      addChild(new WaterTile.create()
-        ..x = tileX
-        ..y = tileY + 90
-        ..width = 101
-        ..height = 80);
     }
 
     if (hasStar) {
