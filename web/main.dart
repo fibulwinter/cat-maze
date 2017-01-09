@@ -15,6 +15,7 @@ void main() {
   var canvas = html.querySelector('#stage');
   canvas.focus();
   var stage = new Stage(canvas);
+  stage.backgroundColor = Color.DodgerBlue;
   renderLoop.addStage(stage);
 
   resourceManager
@@ -192,14 +193,13 @@ class Ground extends DisplayObjectContainer {
   }
 
   addTile(int tileX, int tileY, bool hasTree, bool hasStar) {
-    addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
-      ..x = tileX
-      ..y = tileY);
-    if (hasTree) {
-      addChild(new Bitmap(resourceManager.getBitmapData('tree'))
+    if (!hasTree) {
+      addChild(new Bitmap(resourceManager.getBitmapData('stoneTile'))
         ..x = tileX
         ..y = tileY);
     }
+
+
     if (hasStar) {
       star = new Bitmap(resourceManager.getBitmapData('star'))
         ..x = tileX
